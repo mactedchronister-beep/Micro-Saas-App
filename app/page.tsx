@@ -3,60 +3,81 @@
 import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Initialize Supabase Client (This reads the keys you put in .env.local!)
+// 1. Initialize Supabase
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export default function Dashboard() {
-  // 2. State
+  // Auth State
+  const [session, setSession] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Dashboard State
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [replies, setReplies] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  // 3. Fetch Data from Database on Load
+  // 2. Check for Login Session on Load
   useEffect(() => {
-    fetchReviews();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+      if (session) fetchReviews();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) fetchReviews();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const fetchReviews = async () => {
-    // Pull only reviews that still need a reply from Supabase
+    setIsLoading(true);
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
       .eq('status', 'pending_reply')
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("Error fetching reviews:", error);
-    } else {
-      setReviews(data || []);
-    }
+    if (!error) setReviews(data || []);
     setIsLoading(false);
   };
 
-  // 4. Functions
+  // 3. Login / Logout Functions
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) alert("Login failed: " + error.message);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
+  // 4. Dashboard Functions
   const handleGenerateReply = async (reviewId: number, text: string, rating: number) => {
     setLoadingId(reviewId);
-    
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewText: text, rating }),
       });
-      
       const data = await response.json();
-      
-      if (data.reply) {
-        setReplies(prev => ({ ...prev, [reviewId]: data.reply }));
-      } else {
-        alert("Error: " + (data.error || "Failed to generate reply"));
-      }
+      if (data.reply) setReplies(prev => ({ ...prev, [reviewId]: data.reply }));
     } catch (error) {
-      console.error("Failed to fetch reply:", error);
       alert("Something went wrong connecting to the backend.");
     } finally {
       setLoadingId(null);
@@ -64,33 +85,67 @@ export default function Dashboard() {
   };
 
   const handleApprove = async (reviewId: number) => {
-    // Permanently mark it as 'replied' in the Supabase database!
-    const { error } = await supabase
-      .from('reviews')
-      .update({ status: 'replied' })
-      .eq('id', reviewId);
-
-    if (error) {
-      alert("Failed to update the database.");
-      console.error(error);
-      return;
+    const { error } = await supabase.from('reviews').update({ status: 'replied' }).eq('id', reviewId);
+    if (!error) {
+      setReviews(prev => prev.filter(review => review.id !== reviewId));
     }
-
-    alert("Awesome! Your reply has been permanently saved to the database.");
-    // Remove the completed review from the screen
-    setReviews(prevReviews => prevReviews.filter(review => review.id !== reviewId));
   };
 
-  // 5. UI Rendering
-  if (isLoading) {
-    return <div className="p-8 max-w-4xl mx-auto text-center mt-20 text-xl font-semibold text-gray-500">Connecting to database...</div>;
+  // --- UI RENDERING ---
+
+  if (authLoading) {
+    return <div className="p-8 text-center mt-20 text-gray-500">Loading secure connection...</div>;
   }
 
+  // Show Login Screen if no session exists
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div className="p-8 bg-white rounded-xl shadow-lg w-full max-w-md border border-gray-200">
+          <h1 className="text-2xl font-bold mb-6 text-center text-gray-900">Admin Portal</h1>
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-black focus:outline-none"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Password</label>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 focus:ring-2 focus:ring-black focus:outline-none"
+                required
+              />
+            </div>
+            <button type="submit" className="w-full bg-black text-white p-3 rounded-md hover:bg-gray-800 transition-colors font-medium mt-2">
+              Secure Sign In
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Show Dashboard if session exists
   return (
     <div className="p-8 max-w-4xl mx-auto font-sans">
-      <h1 className="text-3xl font-bold mb-8">Review Manager</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Review Manager</h1>
+        <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors font-medium">
+          Sign Out
+        </button>
+      </div>
       
-      {reviews.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center p-12 text-gray-500">Loading reviews...</div>
+      ) : reviews.length === 0 ? (
         <div className="text-center p-12 bg-green-50 rounded-lg border border-green-200">
           <h2 className="text-2xl font-bold text-green-700 mb-2">All Caught Up!</h2>
           <p className="text-green-600">You've replied to all customer reviews for the business.</p>
@@ -101,19 +156,14 @@ export default function Dashboard() {
             <div key={review.id} className="border p-6 rounded-lg shadow-sm bg-white">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg">{review.author}</h3>
+                  <h3 className="font-semibold text-lg text-gray-900">{review.author}</h3>
                   <div className="text-yellow-500">{"★".repeat(review.rating)}</div>
                 </div>
-                <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">
-                  Needs Reply
-                </span>
+                <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">Needs Reply</span>
               </div>
-              
               <p className="text-gray-700 mb-6">"{review.text}"</p>
-              
               <div className="bg-gray-50 p-4 rounded-lg border">
                 <p className="text-sm text-gray-500 mb-2 font-semibold">AI Suggested Reply:</p>
-                
                 {replies[review.id] ? (
                   <textarea
                     value={replies[review.id]}
@@ -123,7 +173,6 @@ export default function Dashboard() {
                 ) : (
                   <p className="text-gray-400 mb-4 italic">Click below to draft a response...</p>
                 )}
-
                 <div className="flex gap-3">
                   <button 
                     onClick={() => handleGenerateReply(review.id, review.text, review.rating)}
@@ -132,7 +181,6 @@ export default function Dashboard() {
                   >
                     {loadingId === review.id ? "Generating..." : "Draft AI Reply"}
                   </button>
-                  
                   {replies[review.id] && (
                     <button 
                       onClick={() => handleApprove(review.id)}
