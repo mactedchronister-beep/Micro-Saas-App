@@ -60,7 +60,7 @@ export default function Dashboard() {
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
-      .eq('status', 'pending_reply')
+      .eq('status', 'pending') // FIXED: Now properly matches your database status!
       .order('created_at', { ascending: false });
 
     if (!error) setReviews(data || []);
@@ -185,12 +185,14 @@ export default function Dashboard() {
             <div key={review.id} className="border p-6 rounded-lg shadow-sm bg-white">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="font-semibold text-lg text-gray-900">{review.author}</h3>
+                  {/* FIXED: Now pulling `author_name` */}
+                  <h3 className="font-semibold text-lg text-gray-900">{review.author_name}</h3>
                   <div className="text-yellow-500">{"★".repeat(review.rating)}</div>
                 </div>
                 <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">Needs Reply</span>
               </div>
-              <p className="text-gray-700 mb-6">"{review.text}"</p>
+              {/* FIXED: Now pulling `review_text` */}
+              <p className="text-gray-700 mb-6">"{review.review_text}"</p>
               <div className="bg-gray-50 p-4 rounded-lg border">
                 <p className="text-sm text-gray-500 mb-2 font-semibold">AI Suggested Reply:</p>
                 {replies[review.id] ? (
@@ -199,7 +201,8 @@ export default function Dashboard() {
                   <p className="text-gray-400 mb-4 italic">Click below to draft a response...</p>
                 )}
                 <div className="flex gap-3">
-                  <button onClick={() => handleGenerateReply(review.id, review.text, review.rating)} disabled={loadingId === review.id} className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
+                  {/* FIXED: Passing `review_text` to the API */}
+                  <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
                     {loadingId === review.id ? "Generating..." : "Draft AI Reply"}
                   </button>
                   {replies[review.id] && (
