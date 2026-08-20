@@ -130,6 +130,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
         {/* TRUST SIGNAL: Professional Footer */}
         <footer className="bg-white border-t border-gray-100 py-12 relative z-20">
           <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -145,9 +146,10 @@ export default function LandingPage() {
             </p>
             
             <div className="flex gap-6 text-sm font-bold text-gray-400">
-              <a href="#" className="hover:text-gray-900 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-gray-900 transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-gray-900 transition-colors">Contact</a>
+              {/* These links now properly use Next.js routing! */}
+              <Link href="/privacy" className="hover:text-gray-900 transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service</Link>
+              <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
             </div>
           </div>
         </footer>
