@@ -95,11 +95,9 @@ export default function LandingPage() {
                  <div className="w-3 h-3 rounded-full bg-[#ffbd2e]"></div>
                  <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
               </div>
-              <div className="flex-1 bg-gray-50 flex items-center justify-center flex-col gap-4">
-                <div className="w-16 h-16 bg-gray-200 rounded-xl animate-pulse"></div>
-                <div className="w-48 h-4 bg-gray-200 rounded-full animate-pulse"></div>
-                <p className="text-gray-400 font-medium text-sm mt-4 uppercase tracking-widest">Dashboard Interface Preview</p>
-              </div>
+              <div className="flex-1 bg-gray-50 relative overflow-hidden">
+  <img src="/dashboard-preview.png" alt="EchoReply Dashboard" className="w-full h-full object-cover object-top" />
+</div>
             </div>
           </div>
         </main>
