@@ -133,84 +133,130 @@ export default function Dashboard() {
     if (!error) setReviews(prev => prev.filter(review => review.id !== reviewId));
   };
 
+  const handleDemoMode = async () => {
+    if (!session?.user?.id) return;
+    
+    const demoReviews = [
+      { author_name: "Mark T.", rating: 1, review_text: "They were supposed to haul away the old couches from my garage but showed up 2 hours late. Left a mess in the driveway." },
+      { author_name: "Sarah W.", rating: 5, review_text: "Fastest junk removal I've ever used. Cleared out my entire basement in under an hour. Highly recommend!" },
+      { author_name: "James L.", rating: 2, review_text: "Half the washing machines were out of order. Place was clean enough, but waiting for a machine on a Tuesday afternoon is ridiculous." },
+      { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." }
+    ];
+
+    const randomReview = demoReviews[Math.floor(Math.random() * demoReviews.length)];
+
+    const { error } = await supabase.from('reviews').insert([{
+      user_id: session.user.id,
+      author_name: randomReview.author_name,
+      rating: randomReview.rating,
+      review_text: randomReview.review_text,
+      status: 'pending'
+    }]);
+
+    if (!error) {
+      fetchReviews();
+    } else {
+      alert("Database error: Make sure you ran the SQL insert policy!");
+    }
+  };
+
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-gray-500 font-medium">Authenticating secure connection...</div>;
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans">
-        <div className="p-10 bg-white rounded-2xl shadow-xl shadow-gray-200/50 w-full max-w-md border border-gray-100">
-          <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center shadow-md mb-6 mx-auto">
-             <span className="text-white text-2xl leading-none pt-1">✦</span>
+      <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div className="relative z-10 p-10 bg-white rounded-3xl shadow-2xl shadow-gray-200/50 w-full max-w-md border border-gray-100">
+          <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center shadow-lg mb-8 mx-auto">
+             <span className="text-white text-3xl leading-none pt-1">✦</span>
           </div>
           <h1 className="text-2xl font-extrabold mb-8 text-center text-gray-900 tracking-tight">Sign in to EchoReply</h1>
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50 hover:bg-white" required />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 border border-gray-200 rounded-xl text-gray-900 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50 hover:bg-white" required />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50 hover:bg-white" required />
+              <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 border border-gray-200 rounded-xl text-gray-900 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50 hover:bg-white" required />
             </div>
-            <button type="submit" className="w-full bg-black text-white p-4 rounded-xl hover:bg-gray-800 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 font-bold shadow-lg shadow-gray-300/50 mt-4">Secure Sign In</button>
+            <button type="submit" className="w-full bg-gray-900 text-white p-4 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-gray-300 mt-2">
+              Secure Sign In
+            </button>
           </form>
+          {/* TRUST SIGNAL: Secure Login */}
+          <div className="mt-6 flex justify-center items-center gap-2 text-xs font-bold text-gray-400">
+            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
+            256-Bit Encrypted Connection
+          </div>
         </div>
       </div>
     );
   }
 
   return ( 
-    <div className="min-h-screen bg-[#fafafa] font-sans pb-20">
+    <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative">
       {!isPro ? (
-        <div className="flex flex-col items-center justify-center pt-32 px-4">
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-bold tracking-wide">
+        <div className="flex flex-col items-center justify-center pt-32 px-4 relative z-10">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide">
             UPGRADE REQUIRED
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-center tracking-tight text-gray-900">Unlock EchoReply Pro</h2>
-          <p className="mb-10 text-gray-500 text-lg text-center max-w-md">Get full access to automated AI review responses and protect your local business reputation.</p>
+          <p className="mb-10 text-gray-500 text-lg text-center max-w-md leading-relaxed">Get full access to automated AI review responses and protect your local business reputation.</p>
           
-          <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-gray-200 border border-gray-100 w-full max-w-md text-center relative overflow-hidden">
-             {/* Decorative background element */}
-             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500 to-purple-500 opacity-10 rounded-bl-full pointer-events-none"></div>
+          <div className="bg-white p-10 rounded-[2rem] shadow-2xl shadow-gray-200/60 border border-gray-100 w-full max-w-md text-center relative overflow-hidden transition-transform duration-500 hover:-translate-y-1">
+             <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-500 to-purple-500 opacity-[0.08] rounded-bl-full pointer-events-none"></div>
              
-             <div className="text-5xl font-extrabold text-gray-900 mb-2">$29<span className="text-xl text-gray-400 font-medium tracking-normal">/mo</span></div>
-             <p className="text-gray-500 font-medium mb-8">Cancel anytime. No hidden fees.</p>
+             <div className="text-6xl font-extrabold text-gray-900 mb-2 tracking-tighter">$29<span className="text-xl text-gray-400 font-medium tracking-normal">/mo</span></div>
+             <p className="text-green-600 font-bold mb-10 text-sm bg-green-50 inline-block px-3 py-1 rounded-full border border-green-100">14-Day Money-Back Guarantee</p>
              
-             <ul className="text-left space-y-4 mb-8">
-               <li className="flex items-center text-gray-700 font-medium">
-                 <svg className="w-5 h-5 text-indigo-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
-                 Unlimited AI Review Responses
+             <ul className="text-left space-y-5 mb-10">
+               <li className="flex items-center text-gray-700 font-bold">
+                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-4">
+                   <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                 </div>
+                 Unlimited AI Responses
                </li>
-               <li className="flex items-center text-gray-700 font-medium">
-                 <svg className="w-5 h-5 text-indigo-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+               <li className="flex items-center text-gray-700 font-bold">
+                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-4">
+                   <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                 </div>
                  Real-time dashboard access
                </li>
-               <li className="flex items-center text-gray-700 font-medium">
-                 <svg className="w-5 h-5 text-indigo-500 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
-                 Secure Stripe billing
+               <li className="flex items-center text-gray-700 font-bold">
+                 <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-4">
+                   <svg className="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                 </div>
+                 Cancel anytime. No hidden fees.
                </li>
              </ul>
 
             <button 
               onClick={handleSubscribe} 
               disabled={isCheckoutLoading}
-              className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-indigo-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 disabled:opacity-70"
+              className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-xl font-bold text-lg transition-all duration-200 ease-out hover:shadow-[0_8px_30px_rgba(79,70,229,0.3)] hover:-translate-y-1 active:translate-y-0.5 active:scale-[0.98] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-70 disabled:transform-none disabled:shadow-none"
             >
               {isCheckoutLoading ? 'Connecting securely...' : 'Upgrade Now'}
             </button>
+            
+            {/* TRUST SIGNAL: Stripe Secure Checkout */}
+            <div className="mt-5 flex justify-center items-center gap-2 text-xs font-bold text-gray-400">
+               <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
+               Guaranteed safe & secure checkout by <span className="text-[#635BFF] font-extrabold ml-1 tracking-wide">stripe</span>
+            </div>
           </div>
 
-          <button onClick={handleLogout} className="mt-8 text-sm font-semibold text-gray-400 hover:text-gray-800 transition-colors">
+          <button onClick={handleLogout} className="mt-8 text-sm font-bold text-gray-400 hover:text-gray-800 transition-colors">
             Sign out of account
           </button>
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto pt-12 px-6">
+        <div className="max-w-5xl mx-auto pt-12 px-6 relative z-10">
           
           {toastMessage && (
-            <div className={`mb-8 p-4 rounded-xl text-sm font-bold shadow-sm ${toastMessage.includes('successful') ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-yellow-50 text-yellow-800 border border-yellow-200'}`}>
+            <div className={`mb-8 p-4 rounded-xl text-sm font-bold shadow-sm flex justify-between items-center ${toastMessage.includes('successful') ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-yellow-50 text-yellow-800 border border-yellow-200'}`}>
               {toastMessage}
-              <button onClick={() => setToastMessage(null)} className="float-right ml-4 hover:opacity-70">&times;</button>
+              <button onClick={() => setToastMessage(null)} className="hover:opacity-70 text-lg leading-none">&times;</button>
             </div>
           )}
 
@@ -219,62 +265,71 @@ export default function Dashboard() {
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Review Manager</h1>
               <p className="text-gray-500 font-medium mt-1">Approve and automate your customer replies.</p>
             </div>
-            <div className="flex gap-3 bg-white p-1.5 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex gap-3 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
+              <button 
+                onClick={handleDemoMode} 
+                className="text-sm px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+              >
+                Test Demo Mode
+              </button>
+              
               <button 
                 onClick={handlePortal} 
                 disabled={isPortalLoading}
-                className="text-sm px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 font-bold disabled:opacity-50 transition-colors"
+                className="text-sm px-5 py-2.5 bg-white text-gray-700 rounded-xl border border-gray-100 font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 disabled:transform-none disabled:shadow-none"
               >
                 {isPortalLoading ? "Loading..." : "Manage Billing"}
               </button>
-              <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-bold transition-colors">Log Out</button>
+              <button onClick={handleLogout} className="text-sm px-5 py-2.5 bg-gray-50 text-gray-600 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-gray-200">
+                Log Out
+              </button>
             </div>
           </div>
           
           {isLoading ? (
             <div className="text-center p-20 text-gray-400 font-bold animate-pulse">Syncing latest reviews...</div>
           ) : reviews.length === 0 ? (
-            <div className="text-center p-16 bg-white rounded-3xl border border-gray-100 shadow-sm">
-              <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🎉</div>
+            <div className="text-center p-16 bg-white rounded-3xl border border-gray-100 shadow-sm transition-transform duration-300 hover:-translate-y-1 hover:shadow-md">
+              <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">🎉</div>
               <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Inbox Zero</h2>
               <p className="text-gray-500 font-medium">You are all caught up! No pending reviews.</p>
             </div>
           ) : (
             <div className="space-y-6">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-gray-100 p-8 rounded-3xl shadow-sm bg-white hover:shadow-md transition-shadow">
+                <div key={review.id} className="border border-gray-100 p-8 rounded-[2rem] shadow-sm bg-white transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
                   <div className="flex justify-between items-start mb-6">
                     <div className="flex gap-4 items-center">
-                      <div className="w-12 h-12 bg-indigo-50 text-indigo-700 font-bold text-xl rounded-full flex items-center justify-center uppercase">
+                      <div className="w-14 h-14 bg-indigo-50 text-indigo-600 font-extrabold text-2xl rounded-2xl flex items-center justify-center uppercase shadow-sm">
                         {review.author_name.charAt(0)}
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg text-gray-900 leading-none mb-1">{review.author_name}</h3>
+                        <h3 className="font-extrabold text-xl text-gray-900 leading-none mb-1.5">{review.author_name}</h3>
                         <div className="text-yellow-400 text-sm tracking-widest">{"★".repeat(review.rating)}<span className="text-gray-200">{"★".repeat(5 - review.rating)}</span></div>
                       </div>
                     </div>
-                    <span className="bg-red-50 border border-red-100 text-red-600 text-xs px-3 py-1.5 rounded-full font-bold uppercase tracking-wide">Action Required</span>
+                    <span className="bg-red-50 border border-red-100 text-red-600 text-xs px-4 py-2 rounded-full font-bold uppercase tracking-wider shadow-sm">Action Required</span>
                   </div>
                   
-                  <p className="text-gray-700 mb-8 text-lg leading-relaxed">"{review.review_text}"</p>
+                  <p className="text-gray-700 mb-8 text-lg leading-relaxed font-medium">"{review.review_text}"</p>
                   
-                  <div className="bg-[#fafafa] p-6 rounded-2xl border border-gray-100 relative">
-                    <p className="text-xs text-indigo-500 mb-3 font-bold uppercase tracking-widest flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> AI Assistant
+                  <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 relative">
+                    <p className="text-xs text-indigo-500 mb-4 font-bold uppercase tracking-widest flex items-center gap-2">
+                       <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span> AI Assistant
                     </p>
                     {replies[review.id] ? (
-                      <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-4 border border-gray-200 rounded-xl text-gray-800 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white min-h-[120px] resize-y font-medium shadow-sm" />
+                      <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-5 border border-gray-200 rounded-xl text-gray-800 mb-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white min-h-[140px] resize-y font-medium shadow-sm transition-all" />
                     ) : (
-                      <div className="h-[120px] w-full border border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-white/50 mb-4">
-                        <p className="text-gray-400 font-medium">Click below to draft a smart response...</p>
+                      <div className="h-[140px] w-full border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center bg-white/50 mb-5">
+                        <p className="text-gray-400 font-bold">Click below to draft a smart response...</p>
                       </div>
                     )}
-                    <div className="flex gap-3">
-                      <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 hover:-translate-y-0.5 active:scale-95 disabled:bg-gray-300 disabled:transform-none transition-all duration-200 shadow-md">
-                        {loadingId === review.id ? "Drafting..." : "Draft Reply with AI"}
+                    <div className="flex gap-4">
+                      <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:bg-gray-300 disabled:transform-none disabled:shadow-none">
+                        {loadingId === review.id ? "Drafting Response..." : "Draft Reply with AI"}
                       </button>
                       {replies[review.id] && (
-                        <button onClick={() => handleApprove(review.id)} className="bg-green-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-green-600 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 shadow-md shadow-green-500/20">
+                        <button onClick={() => handleApprove(review.id)} className="bg-green-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-green-600 hover:shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-green-500/30">
                           Approve & Publish
                         </button>
                       )}

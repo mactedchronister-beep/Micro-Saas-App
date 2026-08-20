@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
-// 1. Initialize Supabase on the Landing Page
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,7 +12,6 @@ const supabase = createClient(
 export default function LandingPage() {
   const [session, setSession] = useState<any>(null);
 
-  // 2. Check if the user is already logged in
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -39,9 +37,8 @@ export default function LandingPage() {
             EchoReply
           </div>
           <div className="space-x-6 flex items-center">
-            {/* 3. Swap the Navbar buttons if logged in */}
             {session ? (
-              <Link href="/dashboard" className="group text-sm px-5 py-2.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-400/50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+              <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
                 Go to Dashboard
               </Link>
             ) : (
@@ -49,7 +46,7 @@ export default function LandingPage() {
                 <Link href="/dashboard" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
                   Sign In
                 </Link>
-                <Link href="/dashboard" className="group text-sm px-5 py-2.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-400/50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+                <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
                   Get Started
                 </Link>
               </>
@@ -76,8 +73,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            {/* 4. Swap the Hero button text if logged in */}
-            <Link href="/dashboard" className="group relative inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg transition-all duration-200 hover:bg-indigo-500 hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:scale-95 overflow-hidden">
+            <Link href="/dashboard" className="group relative inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg transition-all duration-200 ease-out hover:bg-indigo-500 hover:shadow-[0_8px_30px_rgba(79,70,229,0.3)] hover:-translate-y-1 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-indigo-500/30 overflow-hidden">
               <span className="relative z-10 flex items-center gap-2">
                 {session ? 'Go to Dashboard' : 'Start Free Trial'}
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -86,7 +82,7 @@ export default function LandingPage() {
               </span>
             </Link>
             
-            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center justify-center px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm hover:-translate-y-1 active:scale-95 transition-all duration-200 cursor-pointer">
+            <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center justify-center px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-lg transition-all duration-200 ease-out hover:bg-gray-50 hover:border-gray-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-4 focus:ring-gray-200 cursor-pointer">
               See How It Works
             </a>
           </div>
@@ -116,17 +112,17 @@ export default function LandingPage() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-10">
-              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100">
+              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">1</div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Sync Your Account</h3>
                 <p className="text-gray-600 font-medium leading-relaxed">Connect your business profiles securely. We automatically pull in every new customer review the second it is posted.</p>
               </div>
-              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100">
+              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">2</div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">AI Drafts the Reply</h3>
                 <p className="text-gray-600 font-medium leading-relaxed">Our advanced AI instantly analyzes the sentiment and drafts a personalized, professional response tailored to the customer.</p>
               </div>
-              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100">
+              <div className="p-8 rounded-3xl bg-gray-50 border border-gray-100 transition-all duration-300 hover:shadow-xl hover:shadow-gray-200/50 hover:-translate-y-1">
                 <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl mb-6">3</div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">Approve & Publish</h3>
                 <p className="text-gray-600 font-medium leading-relaxed">Review the draft in your dashboard. With one click, approve the response and automatically publish it live to the web.</p>
@@ -134,6 +130,27 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        {/* TRUST SIGNAL: Professional Footer */}
+        <footer className="bg-white border-t border-gray-100 py-12 relative z-20">
+          <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2 cursor-default">
+              <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center">
+                <span className="text-gray-500 text-xs leading-none pt-0.5">✦</span>
+              </div>
+              <span className="font-bold text-gray-900 tracking-tight">EchoReply</span>
+            </div>
+            
+            <p className="text-sm font-medium text-gray-400">
+              © {new Date().getFullYear()} EchoReply LLC. All rights reserved.
+            </p>
+            
+            <div className="flex gap-6 text-sm font-bold text-gray-400">
+              <a href="#" className="hover:text-gray-900 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-gray-900 transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-gray-900 transition-colors">Contact</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
