@@ -134,6 +134,19 @@ export default function Dashboard() {
     if (!error) setReviews(prev => prev.filter(review => review.id !== reviewId));
   };
 
+  const handleClearQueue = async () => {
+    if (!session?.user?.id) return;
+    setIsLoading(true);
+    const { error } = await supabase.from('reviews').delete().eq('user_id', session.user.id);
+    if (!error) {
+      setReviews([]);
+      setReplies({});
+    } else {
+      alert("Error clearing reviews.");
+    }
+    setIsLoading(false);
+  };
+
   const handleDemoMode = async () => {
     if (!session?.user?.id) return;
     
@@ -144,11 +157,9 @@ export default function Dashboard() {
       { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." }
     ];
 
-    // NEW LOGIC: Prevent duplicates by finding a review that isn't currently on the screen
     const existingNames = reviews.map(r => r.author_name);
     const availableReviews = demoReviews.filter(r => !existingNames.includes(r.author_name));
     
-    // If all 4 are on the screen, just pick a random one. Otherwise, pick a new one.
     const reviewToInsert = availableReviews.length > 0 
       ? availableReviews[0] 
       : demoReviews[Math.floor(Math.random() * demoReviews.length)];
@@ -171,7 +182,6 @@ export default function Dashboard() {
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-gray-500 font-medium">Authenticating secure connection...</div>;
 
   if (!session) {
-    // [Sign In screen remains identical to your previous version...]
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -205,7 +215,6 @@ export default function Dashboard() {
   return ( 
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20">
       
-      {/* PREMIUM DASHBOARD NAVBAR */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
           <Link href="/" className="text-xl font-extrabold text-gray-900 tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
@@ -217,14 +226,19 @@ export default function Dashboard() {
           
           <div className="flex items-center gap-3">
             {isPro && (
-              <button onClick={handleDemoMode} className="text-sm px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-indigo-100 active:scale-95">
-                Test Demo Mode
-              </button>
+              <>
+                <button onClick={handleDemoMode} className="text-sm px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-indigo-100 active:scale-95">
+                  Test Demo Mode
+                </button>
+                <button onClick={handleClearQueue} className="text-sm px-4 py-2 bg-white text-red-600 border border-red-100 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-red-50 active:scale-95">
+                  Reset Queue
+                </button>
+              </>
             )}
             <button onClick={handlePortal} disabled={isPortalLoading} className="text-sm px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-gray-50 active:scale-95 disabled:opacity-50">
               {isPortalLoading ? "Loading..." : "Manage Billing"}
             </button>
-            <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-50 text-gray-600 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-gray-100 hover:text-gray-900 active:scale-95">
+            <button onClick={handleLogout} className="text-sm px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-gray-50 active:scale-95">
               Log Out
             </button>
           </div>
@@ -233,7 +247,6 @@ export default function Dashboard() {
 
       {!isPro ? (
         <div className="flex flex-col items-center justify-center pt-24 px-4 relative z-10">
-          {/* [Paywall remains identical to your previous version...] */}
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide">
             UPGRADE REQUIRED
           </div>
@@ -333,16 +346,25 @@ export default function Dashboard() {
                         <p className="text-gray-400 font-bold">Click below to draft a smart response...</p>
                       </div>
                     )}
+                    
+                    {/* UPDATED BUTTON LOGIC: Redrafting */}
                     <div className="flex gap-4">
-                      <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:bg-gray-300 disabled:transform-none disabled:shadow-none">
-                        {loadingId === review.id ? "Drafting Response..." : "Draft Reply with AI"}
-                      </button>
-                      {replies[review.id] && (
-                        <button onClick={() => handleApprove(review.id)} className="bg-green-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-green-600 hover:shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-green-500/30">
-                          Approve & Publish
+                      {replies[review.id] ? (
+                        <>
+                          <button onClick={() => handleApprove(review.id)} className="bg-green-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-green-600 hover:shadow-[0_8px_30px_rgba(34,197,94,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-green-500/30">
+                            Approve & Publish
+                          </button>
+                          <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-white text-gray-700 border border-gray-200 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:opacity-50 disabled:transform-none">
+                            {loadingId === review.id ? "Drafting..." : "Redraft Response"}
+                          </button>
+                        </>
+                      ) : (
+                        <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:bg-gray-300 disabled:transform-none disabled:shadow-none">
+                          {loadingId === review.id ? "Drafting Response..." : "Draft Reply with AI"}
                         </button>
                       )}
                     </div>
+
                   </div>
                 </div>
               ))}

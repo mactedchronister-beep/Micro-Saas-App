@@ -30,16 +30,20 @@ export default function LandingPage() {
 
       <div className="relative z-10">
         <nav className="flex justify-between items-center p-6 max-w-6xl mx-auto">
-          <div className="text-2xl font-extrabold tracking-tighter flex items-center gap-2 cursor-default">
+          <Link href="/" className="text-2xl font-extrabold tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md">
               <span className="text-white text-lg leading-none pt-1">✦</span>
             </div>
             EchoReply
-          </div>
-         <div className="space-x-6 flex items-center">
+          </Link>
+          
+          <div className="space-x-6 flex items-center">
             {session ? (
               <>
-                <button onClick={async () => { await supabase.auth.signOut(); setSession(null); }} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+                <button 
+                  onClick={async () => { await supabase.auth.signOut(); setSession(null); }} 
+                  className="text-sm px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-gray-200"
+                >
                   Sign Out
                 </button>
                 <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
@@ -101,8 +105,8 @@ export default function LandingPage() {
                  <div className="w-3 h-3 rounded-full bg-[#27c93f]"></div>
               </div>
               <div className="flex-1 bg-gray-50 relative overflow-hidden">
-  <img src="/dashboard-preview.png" alt="EchoReply Dashboard" className="w-full h-full object-cover object-top" />
-</div>
+                <img src="/dashboard-preview.png" alt="EchoReply Dashboard" className="w-full h-full object-cover object-top" />
+              </div>
             </div>
           </div>
         </main>
@@ -134,7 +138,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* TRUST SIGNAL: Professional Footer */}
         <footer className="bg-white border-t border-gray-100 py-12 relative z-20">
           <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 cursor-default">
@@ -149,7 +152,6 @@ export default function LandingPage() {
             </p>
             
             <div className="flex gap-6 text-sm font-bold text-gray-400">
-              {/* These links now properly use Next.js routing! */}
               <Link href="/privacy" className="hover:text-gray-900 transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service</Link>
               <Link href="/contact" className="hover:text-gray-900 transition-colors">Contact</Link>
