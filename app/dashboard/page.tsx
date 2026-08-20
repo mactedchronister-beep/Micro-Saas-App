@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -143,13 +144,20 @@ export default function Dashboard() {
       { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." }
     ];
 
-    const randomReview = demoReviews[Math.floor(Math.random() * demoReviews.length)];
+    // NEW LOGIC: Prevent duplicates by finding a review that isn't currently on the screen
+    const existingNames = reviews.map(r => r.author_name);
+    const availableReviews = demoReviews.filter(r => !existingNames.includes(r.author_name));
+    
+    // If all 4 are on the screen, just pick a random one. Otherwise, pick a new one.
+    const reviewToInsert = availableReviews.length > 0 
+      ? availableReviews[0] 
+      : demoReviews[Math.floor(Math.random() * demoReviews.length)];
 
     const { error } = await supabase.from('reviews').insert([{
       user_id: session.user.id,
-      author_name: randomReview.author_name,
-      rating: randomReview.rating,
-      review_text: randomReview.review_text,
+      author_name: reviewToInsert.author_name,
+      rating: reviewToInsert.rating,
+      review_text: reviewToInsert.review_text,
       status: 'pending'
     }]);
 
@@ -163,6 +171,7 @@ export default function Dashboard() {
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-gray-500 font-medium">Authenticating secure connection...</div>;
 
   if (!session) {
+    // [Sign In screen remains identical to your previous version...]
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -184,7 +193,6 @@ export default function Dashboard() {
               Secure Sign In
             </button>
           </form>
-          {/* TRUST SIGNAL: Secure Login */}
           <div className="mt-6 flex justify-center items-center gap-2 text-xs font-bold text-gray-400">
             <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
             256-Bit Encrypted Connection
@@ -195,9 +203,37 @@ export default function Dashboard() {
   }
 
   return ( 
-    <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative">
+    <div className="min-h-screen bg-[#fafafa] font-sans pb-20">
+      
+      {/* PREMIUM DASHBOARD NAVBAR */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
+          <Link href="/" className="text-xl font-extrabold tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md">
+              <span className="text-white text-lg leading-none pt-1">✦</span>
+            </div>
+            EchoReply
+          </Link>
+          
+          <div className="flex items-center gap-3">
+            {isPro && (
+              <button onClick={handleDemoMode} className="text-sm px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-indigo-100 active:scale-95">
+                Test Demo Mode
+              </button>
+            )}
+            <button onClick={handlePortal} disabled={isPortalLoading} className="text-sm px-4 py-2 bg-white text-gray-700 border border-gray-200 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-gray-50 active:scale-95 disabled:opacity-50">
+              {isPortalLoading ? "Loading..." : "Manage Billing"}
+            </button>
+            <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-50 text-gray-600 rounded-lg font-bold transition-all duration-200 ease-out hover:bg-gray-100 hover:text-gray-900 active:scale-95">
+              Log Out
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {!isPro ? (
-        <div className="flex flex-col items-center justify-center pt-32 px-4 relative z-10">
+        <div className="flex flex-col items-center justify-center pt-24 px-4 relative z-10">
+          {/* [Paywall remains identical to your previous version...] */}
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide">
             UPGRADE REQUIRED
           </div>
@@ -238,20 +274,14 @@ export default function Dashboard() {
             >
               {isCheckoutLoading ? 'Connecting securely...' : 'Upgrade Now'}
             </button>
-            
-            {/* TRUST SIGNAL: Stripe Secure Checkout */}
             <div className="mt-5 flex justify-center items-center gap-2 text-xs font-bold text-gray-400">
                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
                Guaranteed safe & secure checkout by <span className="text-[#635BFF] font-extrabold ml-1 tracking-wide">stripe</span>
             </div>
           </div>
-
-          <button onClick={handleLogout} className="mt-8 text-sm font-bold text-gray-400 hover:text-gray-800 transition-colors">
-            Sign out of account
-          </button>
         </div>
       ) : (
-        <div className="max-w-5xl mx-auto pt-12 px-6 relative z-10">
+        <div className="max-w-4xl mx-auto pt-12 px-6 relative z-10">
           
           {toastMessage && (
             <div className={`mb-8 p-4 rounded-xl text-sm font-bold shadow-sm flex justify-between items-center ${toastMessage.includes('successful') ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-yellow-50 text-yellow-800 border border-yellow-200'}`}>
@@ -260,30 +290,9 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Review Manager</h1>
-              <p className="text-gray-500 font-medium mt-1">Approve and automate your customer replies.</p>
-            </div>
-            <div className="flex gap-3 bg-white p-2 rounded-2xl border border-gray-200 shadow-sm">
-              <button 
-                onClick={handleDemoMode} 
-                className="text-sm px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-              >
-                Test Demo Mode
-              </button>
-              
-              <button 
-                onClick={handlePortal} 
-                disabled={isPortalLoading}
-                className="text-sm px-5 py-2.5 bg-white text-gray-700 rounded-xl border border-gray-100 font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-gray-200 disabled:opacity-50 disabled:transform-none disabled:shadow-none"
-              >
-                {isPortalLoading ? "Loading..." : "Manage Billing"}
-              </button>
-              <button onClick={handleLogout} className="text-sm px-5 py-2.5 bg-gray-50 text-gray-600 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-100 hover:text-gray-900 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-gray-200">
-                Log Out
-              </button>
-            </div>
+          <div className="mb-10">
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Review Manager</h1>
+            <p className="text-gray-500 font-medium mt-1">Approve and automate your customer replies.</p>
           </div>
           
           {isLoading ? (

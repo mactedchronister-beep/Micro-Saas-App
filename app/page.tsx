@@ -36,11 +36,16 @@ export default function LandingPage() {
             </div>
             EchoReply
           </div>
-          <div className="space-x-6 flex items-center">
+         <div className="space-x-6 flex items-center">
             {session ? (
-              <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Go to Dashboard
-              </Link>
+              <>
+                <button onClick={async () => { await supabase.auth.signOut(); setSession(null); }} className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+                  Sign Out
+                </button>
+                <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
+                  Go to Dashboard
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/dashboard" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
