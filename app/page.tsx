@@ -29,33 +29,33 @@ export default function LandingPage() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/15 blur-[100px] rounded-full pointer-events-none"></div>
 
       <div className="relative z-10">
-        <nav className="flex justify-between items-center p-6 max-w-6xl mx-auto">
-          <Link href="/" className="text-2xl font-extrabold tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md">
-              <span className="text-white text-lg leading-none pt-1">✦</span>
+        <nav className="flex flex-col md:flex-row justify-between items-center p-6 max-w-6xl mx-auto gap-4">
+          <Link href="/" className="text-2xl font-extrabold text-gray-900 tracking-tighter flex items-center gap-3 transition-transform active:scale-95">
+            <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-black rounded-xl flex items-center justify-center shadow-md">
+              <span className="text-white text-xl leading-none pt-0.5">✦</span>
             </div>
             EchoReply
           </Link>
           
-          <div className="space-x-6 flex items-center">
+          <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 w-full md:w-auto">
             {session ? (
               <>
                 <button 
                   onClick={async () => { await supabase.auth.signOut(); setSession(null); }} 
-                  className="text-sm px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-[0.97] focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="text-sm px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95"
                 >
                   Sign Out
                 </button>
-                <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
+                <Link href="/dashboard" className="text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:scale-95">
                   Go to Dashboard
                 </Link>
               </>
             ) : (
               <>
-                <Link href="/dashboard" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+                <Link href="/dashboard" className="text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors px-4 py-2.5">
                   Sign In
                 </Link>
-                <Link href="/dashboard" className="group text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] active:shadow-inner focus:outline-none focus:ring-4 focus:ring-gray-300">
+                <Link href="/dashboard" className="text-sm px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:scale-95">
                   Get Started
                 </Link>
               </>

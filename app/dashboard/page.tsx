@@ -14,6 +14,9 @@ export default function Dashboard() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(true);
+  
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingId, setLoadingId] = useState<number | null>(null);
@@ -71,10 +74,33 @@ export default function Dashboard() {
     setIsLoading(false);
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) alert("Login failed: " + error.message);
+    setAuthError(null);
+    
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) setAuthError(error.message);
+      else setAuthError("Success! Check your email for a confirmation link.");
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          setAuthError("Incorrect email or password. Please try again.");
+        } else {
+          setAuthError(error.message);
+        }
+      }
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setAuthError(null);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` }
+    });
+    if (error) setAuthError(error.message);
   };
 
   const handleLogout = async () => await supabase.auth.signOut();
@@ -203,8 +229,28 @@ export default function Dashboard() {
           <div className="w-14 h-14 bg-gradient-to-br from-gray-900 to-black rounded-2xl flex items-center justify-center shadow-xl mb-8 mx-auto">
              <span className="text-white text-3xl leading-none pt-1">✦</span>
           </div>
-          <h1 className="text-2xl font-extrabold mb-8 text-center text-gray-900 tracking-tight">Sign in to EchoReply</h1>
-          <form onSubmit={handleLogin} className="space-y-6">
+          <h1 className="text-2xl font-extrabold mb-8 text-center text-gray-900 tracking-tight">
+            {isSignUp ? "Create your account" : "Sign in to EchoReply"}
+          </h1>
+          
+          {authError && (
+            <div className={`mb-6 p-4 rounded-2xl text-sm font-bold shadow-sm ${authError.includes('Success') ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+              {authError}
+            </div>
+          )}
+
+          <button onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 text-gray-700 p-4 rounded-2xl font-bold transition-all duration-200 hover:bg-gray-50 hover:shadow-sm active:scale-[0.98] mb-6">
+            <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 15.01 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="h-px bg-gray-200 flex-1"></div>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Or email</span>
+            <div className="h-px bg-gray-200 flex-1"></div>
+          </div>
+
+          <form onSubmit={handleEmailAuth} className="space-y-5">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 border border-gray-200 rounded-2xl text-gray-900 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50/50 hover:bg-white font-medium" required />
@@ -213,13 +259,16 @@ export default function Dashboard() {
               <label className="block text-sm font-bold text-gray-700 mb-2">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 border border-gray-200 rounded-2xl text-gray-900 focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all focus:outline-none bg-gray-50/50 hover:bg-white font-medium" required />
             </div>
-            <button type="submit" className="w-full bg-gray-900 text-white p-4 rounded-2xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.2)] focus:outline-none focus:ring-4 focus:ring-gray-300 mt-2">
-              Secure Sign In
+            <button type="submit" className="w-full bg-gray-900 text-white p-4 rounded-2xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-lg active:scale-[0.98] mt-2">
+              {isSignUp ? "Create Account" : "Secure Sign In"}
             </button>
           </form>
-          <div className="mt-8 flex justify-center items-center gap-2 text-xs font-bold text-gray-400">
-            <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
-            256-Bit Bank-Grade Encryption
+
+          <div className="mt-8 text-center text-sm font-medium text-gray-500">
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
+            <button onClick={() => { setIsSignUp(!isSignUp); setAuthError(null); }} className="font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+              {isSignUp ? "Sign In" : "Sign Up"}
+            </button>
           </div>
         </div>
       </div>
@@ -230,7 +279,6 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none"></div>
 
-      {/* MOBILE OPTIMIZED NAVBAR */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 md:h-20 flex flex-col md:flex-row justify-between items-center gap-4">
           <Link href="/" className="text-xl font-extrabold text-gray-900 tracking-tighter flex items-center gap-3 transition-transform active:scale-95">
@@ -313,7 +361,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* MOBILE OPTIMIZED HEADER */}
           <div className="mb-8 md:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Review Manager</h1>
@@ -337,7 +384,6 @@ export default function Dashboard() {
               {reviews.map((review) => (
                 <div key={review.id} className="border border-gray-100 p-6 md:p-8 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] bg-white/90 backdrop-blur-xl transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1">
                   
-                  {/* MOBILE OPTIMIZED REVIEW CARD HEADER */}
                   <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                     <div className="flex gap-4 items-center">
                       <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 font-extrabold text-2xl rounded-2xl flex items-center justify-center uppercase shadow-inner border border-indigo-100/50 shrink-0">
@@ -375,7 +421,6 @@ export default function Dashboard() {
                       </div>
                     )}
                     
-                    {/* MOBILE OPTIMIZED ACTION BUTTONS */}
                     <div className="flex flex-col sm:flex-row gap-3">
                       {replies[review.id] ? (
                         <>
