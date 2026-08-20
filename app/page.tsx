@@ -1,7 +1,31 @@
 'use client';
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
+
+// 1. Initialize Supabase on the Landing Page
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export default function LandingPage() {
+  const [session, setSession] = useState<any>(null);
+
+  // 2. Check if the user is already logged in
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#fafafa] font-sans text-gray-900 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/15 blur-[100px] rounded-full pointer-events-none"></div>
@@ -15,12 +39,21 @@ export default function LandingPage() {
             EchoReply
           </div>
           <div className="space-x-6 flex items-center">
-            <Link href="/dashboard" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
-              Sign In
-            </Link>
-            <Link href="/dashboard" className="group text-sm px-5 py-2.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-400/50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
-              Get Started
-            </Link>
+            {/* 3. Swap the Navbar buttons if logged in */}
+            {session ? (
+              <Link href="/dashboard" className="group text-sm px-5 py-2.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-400/50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+                Go to Dashboard
+              </Link>
+            ) : (
+              <>
+                <Link href="/dashboard" className="text-sm font-semibold text-gray-500 hover:text-gray-900 transition-colors">
+                  Sign In
+                </Link>
+                <Link href="/dashboard" className="group text-sm px-5 py-2.5 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 hover:shadow-lg hover:shadow-gray-400/50 hover:-translate-y-0.5 active:scale-95 transition-all duration-200">
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </nav>
 
@@ -43,16 +76,16 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            {/* 4. Swap the Hero button text if logged in */}
             <Link href="/dashboard" className="group relative inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white rounded-xl font-bold text-lg transition-all duration-200 hover:bg-indigo-500 hover:shadow-xl hover:shadow-indigo-500/30 hover:-translate-y-1 active:scale-95 overflow-hidden">
               <span className="relative z-10 flex items-center gap-2">
-                Start Free Trial
+                {session ? 'Go to Dashboard' : 'Start Free Trial'}
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </span>
             </Link>
             
-            {/* THIS LINK NOW WORKS SMOOTHLY */}
             <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center justify-center px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-lg hover:bg-gray-50 hover:border-gray-300 hover:shadow-sm hover:-translate-y-1 active:scale-95 transition-all duration-200 cursor-pointer">
               See How It Works
             </a>
@@ -75,7 +108,6 @@ export default function LandingPage() {
           </div>
         </main>
 
-        {/* NEW FEATURES SECTION */}
         <section id="features" className="py-24 bg-white border-t border-gray-100 relative z-20">
           <div className="max-w-6xl mx-auto px-6">
             <div className="text-center mb-16">
