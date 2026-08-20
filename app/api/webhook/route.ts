@@ -28,35 +28,42 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  // 3. Catch the successful checkout
+  // 3. Catch the successful checkout (UPGRADE)
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as any;
-    
-    // Grab the email the user typed into the Stripe checkout screen
     const customerEmail = session.customer_details?.email;
-    console.log(`💰 Payment successfully verified for: ${customerEmail}`);
+    console.log(`💰 Payment verified for: ${customerEmail}`);
 
     if (customerEmail) {
-      // 4. Update the Supabase Database
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', customerEmail);
-
-      if (data && data.length > 0) {
-        // User exists: Update their status to Pro
-        await supabase
-          .from('profiles')
-          .update({ is_pro: true })
-          .eq('email', customerEmail);
-      } else {
-        // New user: Insert them into the database as a Pro
-        await supabase
-          .from('profiles')
-          .insert([{ email: customerEmail, is_pro: true }]);
-      }
+      const { data } = await supabase.from('profiles').select('*').eq('email', customerEmail);
       
-      console.log('✅ Supabase database updated successfully!');
+      if (data && data.length > 0) {
+        await supabase.from('profiles').update({ is_pro: true }).eq('email', customerEmail);
+      } else {
+        await supabase.from('profiles').insert([{ email: customerEmail, is_pro: true }]);
+      }
+      console.log('✅ Supabase database updated successfully! (PRO GRANTED)');
+    }
+  }
+
+  // 4. Catch the cancellation (DOWNGRADE)
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as any;
+    const customerId = subscription.customer as string;
+    
+    // Fetch the customer from Stripe to get their email
+    const customer = await stripe.customers.retrieve(customerId) as any;
+    const customerEmail = customer.email;
+
+    console.log(`💔 Subscription canceled for: ${customerEmail}`);
+
+    if (customerEmail) {
+      await supabase
+        .from('profiles')
+        .update({ is_pro: false })
+        .eq('email', customerEmail);
+        
+      console.log('🔻 Supabase database updated successfully! (PRO REVOKED)');
     }
   }
 
