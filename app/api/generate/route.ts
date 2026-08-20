@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      temperature: 0.9, // HIGHER TEMPERATURE = MORE CREATIVE, LESS REPETITIVE
+      temperature: 0.9, // This high temperature forces the AI to be creative and never repeat itself!
       messages: [
         {
           role: 'system',

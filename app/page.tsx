@@ -88,7 +88,7 @@ export default function LandingPage() {
             </Link>
             
             <a href="#features" onClick={(e) => { e.preventDefault(); document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} className="inline-flex items-center justify-center px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-lg transition-all duration-200 ease-out hover:bg-gray-50 hover:border-gray-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 active:translate-y-0.5 active:scale-[0.97] active:shadow-[inset_0_3px_8px_rgba(0,0,0,0.05)] focus:outline-none focus:ring-4 focus:ring-gray-200 cursor-pointer">
-              See How It Works
+              How It Works
             </a>
           </div>
           

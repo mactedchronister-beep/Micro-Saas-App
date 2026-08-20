@@ -208,7 +208,7 @@ export default function Dashboard() {
       {/* PREMIUM DASHBOARD NAVBAR */}
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 h-16 flex justify-between items-center">
-          <Link href="/" className="text-xl font-extrabold tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
+          <Link href="/" className="text-xl font-extrabold text-gray-900 tracking-tighter flex items-center gap-2 transition-transform active:scale-95">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shadow-md">
               <span className="text-white text-lg leading-none pt-1">✦</span>
             </div>
