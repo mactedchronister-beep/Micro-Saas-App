@@ -23,17 +23,19 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   
+  // Billing Portal State
+  const [isPortalLoading, setIsPortalLoading] = useState(false);
+  
   // NEW: State to hold our success/cancel banner messages
   const [isPro, setIsPro] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // 2. Check for Login Session & Stripe Redirects on Load
   useEffect(() => {
-    // Check URL parameters for Stripe success or cancel
     const query = new URLSearchParams(window.location.search);
     if (query.get('success')) {
       setToastMessage('Subscription successful! Welcome to EchoReply Pro.');
-      window.history.replaceState(null, '', '/'); // Cleans up the URL to look professional
+      window.history.replaceState(null, '', '/'); 
     }
     if (query.get('canceled')) {
       setToastMessage('Checkout was canceled. Your account has not been charged.');
@@ -44,7 +46,6 @@ export default function Dashboard() {
       setSession(session);
       
       if (session?.user?.email) {
-        // 1. Check their Pro status in the database
         const { data: profile } = await supabase
           .from('profiles')
           .select('is_pro')
@@ -55,7 +56,6 @@ export default function Dashboard() {
           setIsPro(true);
         }
         
-        // 2. Fetch the dashboard data
         fetchReviews();
       }
       
@@ -111,6 +111,31 @@ export default function Dashboard() {
       alert("Something went wrong connecting to Stripe.");
     } finally {
       setIsCheckoutLoading(false);
+    }
+  };
+
+  // NEW: STRIPE PORTAL FUNCTION
+  const handlePortal = async () => {
+    if (!session?.user?.email) return;
+    
+    setIsPortalLoading(true);
+    try {
+      const response = await fetch('/api/portal', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: session.user.email })
+      });
+      const data = await response.json();
+      
+      if (data.url) {
+        window.location.href = data.url; 
+      } else {
+        alert("Portal Error: " + data.error);
+      }
+    } catch (error) {
+      alert("Something went wrong connecting to the billing portal.");
+    } finally {
+      setIsPortalLoading(false);
     }
   };
 
@@ -188,7 +213,6 @@ export default function Dashboard() {
       ) : (
         <div className="p-8 max-w-4xl mx-auto font-sans">
           
-          {/* NEW: NOTIFICATION BANNER */}
           {toastMessage && (
             <div className={`mb-6 p-4 rounded-md text-sm font-medium ${toastMessage.includes('successful') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-yellow-100 text-yellow-800 border border-yellow-200'}`}>
               {toastMessage}
@@ -199,6 +223,15 @@ export default function Dashboard() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold">Review Manager</h1>
             <div className="flex gap-3">
+              {/* NEW: Manage Billing Button */}
+              <button 
+                onClick={handlePortal} 
+                disabled={isPortalLoading}
+                className="text-sm px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors font-medium disabled:opacity-50"
+              >
+                {isPortalLoading ? "Loading..." : "Manage Billing"}
+              </button>
+              
               <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors font-medium">Sign Out</button>
             </div>
           </div>
