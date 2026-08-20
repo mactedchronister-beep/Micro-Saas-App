@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
   
   // NEW: State to hold our success/cancel banner messages
+  const [isPro, setIsPro] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // 2. Check for Login Session & Stripe Redirects on Load
@@ -39,10 +40,26 @@ export default function Dashboard() {
       window.history.replaceState(null, '', '/');
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
+      
+      if (session?.user?.email) {
+        // 1. Check their Pro status in the database
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_pro')
+          .eq('email', session.user.email)
+          .single();
+          
+        if (profile?.is_pro) {
+          setIsPro(true);
+        }
+        
+        // 2. Fetch the dashboard data
+        fetchReviews();
+      }
+      
       setAuthLoading(false);
-      if (session) fetchReviews();
     });
 
     const {
@@ -60,7 +77,7 @@ export default function Dashboard() {
     const { data, error } = await supabase
       .from('reviews')
       .select('*')
-      .eq('status', 'pending') // FIXED: Now properly matches your database status!
+      .eq('status', 'pending') 
       .order('created_at', { ascending: false });
 
     if (!error) setReviews(data || []);
@@ -146,76 +163,89 @@ export default function Dashboard() {
     );
   }
 
-  return (
-    <div className="p-8 max-w-4xl mx-auto font-sans">
-      
-      {/* NEW: NOTIFICATION BANNER */}
-      {toastMessage && (
-        <div className={`mb-6 p-4 rounded-md text-sm font-medium ${toastMessage.includes('successful') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-yellow-100 text-yellow-800 border border-yellow-200'}`}>
-          {toastMessage}
-          <button onClick={() => setToastMessage(null)} className="float-right font-bold ml-4">&times;</button>
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Review Manager</h1>
-        <div className="flex gap-3">
+  return ( 
+    <>
+      {!isPro ? (
+        <div className="flex flex-col items-center justify-center min-h-[70vh] font-sans">
+          <h2 className="text-3xl font-bold mb-4">Upgrade to EchoReply Pro</h2>
+          <p className="mb-6 text-gray-600">Unlock automated AI review responses.</p>
+          
           <button 
             onClick={handleSubscribe} 
             disabled={isCheckoutLoading}
-            className="text-sm px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium disabled:bg-indigo-400"
+            className="px-6 py-3 bg-indigo-600 text-white rounded-md font-bold hover:bg-indigo-700 transition-colors mb-6"
           >
-            {isCheckoutLoading ? "Loading Secure Checkout..." : "Upgrade to Pro ($29/mo)"}
+            {isCheckoutLoading ? 'Loading Secure Checkout...' : 'Upgrade Now - $29/mo'}
           </button>
-          
-          <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors font-medium">Sign Out</button>
-        </div>
-      </div>
-      
-      {isLoading ? (
-        <div className="text-center p-12 text-gray-500">Loading reviews...</div>
-      ) : reviews.length === 0 ? (
-        <div className="text-center p-12 bg-green-50 rounded-lg border border-green-200">
-          <h2 className="text-2xl font-bold text-green-700 mb-2">All Caught Up!</h2>
-          <p className="text-green-600">You've replied to all customer reviews for the business.</p>
+
+          <button 
+            onClick={handleLogout} 
+            className="text-sm text-gray-400 hover:text-gray-800 underline transition-colors"
+          >
+            Sign Out
+          </button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="border p-6 rounded-lg shadow-sm bg-white">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  {/* FIXED: Now pulling `author_name` */}
-                  <h3 className="font-semibold text-lg text-gray-900">{review.author_name}</h3>
-                  <div className="text-yellow-500">{"★".repeat(review.rating)}</div>
-                </div>
-                <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">Needs Reply</span>
-              </div>
-              {/* FIXED: Now pulling `review_text` */}
-              <p className="text-gray-700 mb-6">"{review.review_text}"</p>
-              <div className="bg-gray-50 p-4 rounded-lg border">
-                <p className="text-sm text-gray-500 mb-2 font-semibold">AI Suggested Reply:</p>
-                {replies[review.id] ? (
-                  <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-3 border border-gray-300 rounded-md text-gray-800 mb-4 focus:outline-none focus:ring-2 focus:ring-black min-h-[120px] resize-y" />
-                ) : (
-                  <p className="text-gray-400 mb-4 italic">Click below to draft a response...</p>
-                )}
-                <div className="flex gap-3">
-                  {/* FIXED: Passing `review_text` to the API */}
-                  <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
-                    {loadingId === review.id ? "Generating..." : "Draft AI Reply"}
-                  </button>
-                  {replies[review.id] && (
-                    <button onClick={() => handleApprove(review.id)} className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
-                      Approve & Post
-                    </button>
-                  )}
-                </div>
-              </div>
+        <div className="p-8 max-w-4xl mx-auto font-sans">
+          
+          {/* NEW: NOTIFICATION BANNER */}
+          {toastMessage && (
+            <div className={`mb-6 p-4 rounded-md text-sm font-medium ${toastMessage.includes('successful') ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-yellow-100 text-yellow-800 border border-yellow-200'}`}>
+              {toastMessage}
+              <button onClick={() => setToastMessage(null)} className="float-right font-bold ml-4">&times;</button>
             </div>
-          ))}
+          )}
+
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Review Manager</h1>
+            <div className="flex gap-3">
+              <button onClick={handleLogout} className="text-sm px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors font-medium">Sign Out</button>
+            </div>
+          </div>
+          
+          {isLoading ? (
+            <div className="text-center p-12 text-gray-500">Loading reviews...</div>
+          ) : reviews.length === 0 ? (
+            <div className="text-center p-12 bg-green-50 rounded-lg border border-green-200">
+              <h2 className="text-2xl font-bold text-green-700 mb-2">All Caught Up!</h2>
+              <p className="text-green-600">You've replied to all customer reviews for the business.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="border p-6 rounded-lg shadow-sm bg-white">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-lg text-gray-900">{review.author_name}</h3>
+                      <div className="text-yellow-500">{"★".repeat(review.rating)}</div>
+                    </div>
+                    <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-medium">Needs Reply</span>
+                  </div>
+                  <p className="text-gray-700 mb-6">"{review.review_text}"</p>
+                  <div className="bg-gray-50 p-4 rounded-lg border">
+                    <p className="text-sm text-gray-500 mb-2 font-semibold">AI Suggested Reply:</p>
+                    {replies[review.id] ? (
+                      <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-3 border border-gray-300 rounded-md text-gray-800 mb-4 focus:outline-none focus:ring-2 focus:ring-black min-h-[120px] resize-y" />
+                    ) : (
+                      <p className="text-gray-400 mb-4 italic">Click below to draft a response...</p>
+                    )}
+                    <div className="flex gap-3">
+                      <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-black text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:bg-gray-400 transition-colors">
+                        {loadingId === review.id ? "Generating..." : "Draft AI Reply"}
+                      </button>
+                      {replies[review.id] && (
+                        <button onClick={() => handleApprove(review.id)} className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700 transition-colors">
+                          Approve & Post
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </div>
+    </>
   );
 }
