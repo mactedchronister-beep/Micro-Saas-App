@@ -134,7 +134,6 @@ export default function Dashboard() {
     if (!error) setReviews(prev => prev.filter(review => review.id !== reviewId));
   };
 
-  // INDIVIDUAL DELETE FUNCTION
   const handleDeleteReview = async (reviewId: number) => {
     const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
     if (!error) {
@@ -200,7 +199,7 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-[140px] rounded-full pointer-events-none"></div>
-        <div className="relative z-10 p-10 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.07)] w-full max-w-md border border-gray-100">
+        <div className="relative z-10 p-8 md:p-10 bg-white/90 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.07)] w-full max-w-md border border-gray-100 mx-4">
           <div className="w-14 h-14 bg-gradient-to-br from-gray-900 to-black rounded-2xl flex items-center justify-center shadow-xl mb-8 mx-auto">
              <span className="text-white text-3xl leading-none pt-1">✦</span>
           </div>
@@ -231,8 +230,9 @@ export default function Dashboard() {
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none"></div>
 
+      {/* MOBILE OPTIMIZED NAVBAR */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-6 h-20 flex justify-between items-center">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 md:h-20 flex flex-col md:flex-row justify-between items-center gap-4">
           <Link href="/" className="text-xl font-extrabold text-gray-900 tracking-tighter flex items-center gap-3 transition-transform active:scale-95">
             <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-black rounded-xl flex items-center justify-center shadow-md">
               <span className="text-white text-xl leading-none pt-0.5">✦</span>
@@ -240,21 +240,21 @@ export default function Dashboard() {
             EchoReply
           </Link>
           
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 w-full md:w-auto">
             {isPro && (
               <>
-                <button onClick={handleDemoMode} className="text-sm px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm active:scale-95 border border-indigo-100">
-                  + Test Demo Mode
+                <button onClick={handleDemoMode} className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm active:scale-95 border border-indigo-100 whitespace-nowrap">
+                  + Demo Mode
                 </button>
-                <button onClick={handleClearQueue} className="text-sm px-5 py-2.5 bg-white text-red-600 border border-red-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-red-50 hover:shadow-sm active:scale-95">
+                <button onClick={handleClearQueue} className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-white text-rose-600 border border-rose-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-rose-50 hover:shadow-sm active:scale-95 whitespace-nowrap">
                   Reset Queue
                 </button>
               </>
             )}
-            <button onClick={handlePortal} disabled={isPortalLoading} className="text-sm px-5 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95 disabled:opacity-50">
-              {isPortalLoading ? "Loading..." : "Manage Billing"}
+            <button onClick={handlePortal} disabled={isPortalLoading} className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95 disabled:opacity-50 whitespace-nowrap">
+              {isPortalLoading ? "Loading..." : "Billing"}
             </button>
-            <button onClick={handleLogout} className="text-sm px-5 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95">
+            <button onClick={handleLogout} className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95 whitespace-nowrap">
               Log Out
             </button>
           </div>
@@ -262,14 +262,14 @@ export default function Dashboard() {
       </nav>
 
       {!isPro ? (
-        <div className="flex flex-col items-center justify-center pt-24 px-4 relative z-10">
+        <div className="flex flex-col items-center justify-center pt-16 md:pt-24 px-4 relative z-10">
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide shadow-sm">
             UPGRADE REQUIRED
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-center tracking-tight text-gray-900">Unlock EchoReply Pro</h2>
           <p className="mb-10 text-gray-500 text-lg text-center max-w-md leading-relaxed">Get full access to automated AI review responses and protect your local business reputation.</p>
           
-          <div className="bg-white/90 backdrop-blur-xl p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 w-full max-w-md text-center relative overflow-hidden transition-transform duration-500 hover:-translate-y-1">
+          <div className="bg-white/90 backdrop-blur-xl p-8 md:p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-gray-100 w-full max-w-md text-center relative overflow-hidden transition-transform duration-500 hover:-translate-y-1">
              <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-indigo-500 to-purple-500 opacity-[0.08] rounded-bl-full pointer-events-none"></div>
              
              <div className="text-6xl font-extrabold text-gray-900 mb-2 tracking-tighter">$29<span className="text-xl text-gray-400 font-medium tracking-normal">/mo</span></div>
@@ -304,7 +304,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto pt-12 px-6 relative z-10">
+        <div className="max-w-4xl mx-auto pt-8 md:pt-12 px-4 md:px-6 relative z-10">
           
           {toastMessage && (
             <div className={`mb-8 p-4 rounded-2xl text-sm font-bold shadow-sm flex justify-between items-center ${toastMessage.includes('successful') ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
@@ -313,12 +313,13 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="mb-10 flex justify-between items-end">
+          {/* MOBILE OPTIMIZED HEADER */}
+          <div className="mb-8 md:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Review Manager</h1>
-              <p className="text-gray-500 font-medium mt-1">Approve and automate your customer replies in real-time.</p>
+              <p className="text-gray-500 font-medium mt-1">Approve and automate your customer replies.</p>
             </div>
-            <div className="bg-emerald-50 border border-emerald-200/60 text-emerald-700 px-4 py-2 rounded-2xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 shadow-sm">
+            <div className="bg-emerald-50 border border-emerald-200/60 text-emerald-700 px-4 py-2 rounded-2xl text-xs font-extrabold uppercase tracking-wider flex items-center gap-2 shadow-sm self-start sm:self-auto">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> Pro Active
             </div>
           </div>
@@ -326,18 +327,20 @@ export default function Dashboard() {
           {isLoading ? (
             <div className="text-center p-20 text-gray-400 font-bold animate-pulse">Syncing latest reviews...</div>
           ) : reviews.length === 0 ? (
-            <div className="text-center p-20 bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">🎉</div>
+            <div className="text-center p-10 md:p-20 bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-1">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">🎉</div>
               <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Inbox Zero</h2>
               <p className="text-gray-500 font-medium">You are all caught up! No pending reviews to manage.</p>
             </div>
           ) : (
             <div className="space-y-6">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-gray-100 p-8 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] bg-white/90 backdrop-blur-xl transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1">
-                  <div className="flex justify-between items-start mb-6">
+                <div key={review.id} className="border border-gray-100 p-6 md:p-8 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.03)] bg-white/90 backdrop-blur-xl transition-all duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1">
+                  
+                  {/* MOBILE OPTIMIZED REVIEW CARD HEADER */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                     <div className="flex gap-4 items-center">
-                      <div className="w-14 h-14 bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 font-extrabold text-2xl rounded-2xl flex items-center justify-center uppercase shadow-inner border border-indigo-100/50">
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-indigo-50 to-purple-50 text-indigo-600 font-extrabold text-2xl rounded-2xl flex items-center justify-center uppercase shadow-inner border border-indigo-100/50 shrink-0">
                         {review.author_name.charAt(0)}
                       </div>
                       <div>
@@ -346,45 +349,45 @@ export default function Dashboard() {
                       </div>
                     </div>
                     
-                    {/* INDIVIDUAL DELETE & ACTION REQUIRED BADGE */}
-                    <div className="flex items-center gap-3">
-                      <span className="bg-rose-50 border border-rose-100 text-rose-600 text-xs px-4 py-2 rounded-full font-bold uppercase tracking-wider shadow-sm">Action Required</span>
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-gray-100 pt-4 sm:pt-0">
+                      <span className="bg-rose-50 border border-rose-100 text-rose-600 text-[10px] md:text-xs px-3 md:px-4 py-2 rounded-full font-bold uppercase tracking-wider shadow-sm">Action Required</span>
                       <button 
                         onClick={() => handleDeleteReview(review.id)} 
                         title="Delete this review"
-                        className="w-9 h-9 bg-gray-50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-full flex items-center justify-center border border-gray-200 hover:border-rose-200 transition-all font-bold text-sm"
+                        className="w-9 h-9 bg-gray-50 hover:bg-rose-50 text-gray-400 hover:text-rose-600 rounded-full flex items-center justify-center border border-gray-200 hover:border-rose-200 transition-all font-bold text-sm shrink-0"
                       >
                         &times;
                       </button>
                     </div>
                   </div>
                   
-                  <p className="text-gray-700 mb-8 text-lg leading-relaxed font-medium">"{review.review_text}"</p>
+                  <p className="text-gray-700 mb-8 text-base md:text-lg leading-relaxed font-medium">"{review.review_text}"</p>
                   
-                  <div className="bg-gray-50/70 p-6 rounded-3xl border border-gray-100 relative">
+                  <div className="bg-gray-50/70 p-4 md:p-6 rounded-3xl border border-gray-100 relative">
                     <p className="text-xs text-indigo-500 mb-4 font-bold uppercase tracking-widest flex items-center gap-2">
                        <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span> AI Assistant
                     </p>
                     {replies[review.id] ? (
-                      <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-5 border border-gray-200 rounded-2xl text-gray-800 mb-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white min-h-[140px] resize-y font-medium shadow-sm transition-all" />
+                      <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-4 md:p-5 border border-gray-200 rounded-2xl text-gray-800 mb-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white min-h-[140px] resize-y font-medium shadow-sm transition-all" />
                     ) : (
-                      <div className="h-[140px] w-full border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center bg-white/50 mb-5">
-                        <p className="text-gray-400 font-bold">Click below to draft a smart response...</p>
+                      <div className="h-[140px] w-full border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center bg-white/50 mb-5 text-center px-4">
+                        <p className="text-gray-400 font-bold text-sm md:text-base">Click below to draft a smart response...</p>
                       </div>
                     )}
                     
-                    <div className="flex gap-4">
+                    {/* MOBILE OPTIMIZED ACTION BUTTONS */}
+                    <div className="flex flex-col sm:flex-row gap-3">
                       {replies[review.id] ? (
                         <>
-                          <button onClick={() => handleApprove(review.id)} className="bg-emerald-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-emerald-600 hover:shadow-[0_8px_30px_rgba(16,185,129,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-emerald-500/30">
+                          <button onClick={() => handleApprove(review.id)} className="w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-emerald-600 hover:shadow-[0_8px_30px_rgba(16,185,129,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-emerald-500/30">
                             Approve & Publish
                           </button>
-                          <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-white text-gray-700 border border-gray-200 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:opacity-50">
+                          <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:opacity-50">
                             {loadingId === review.id ? "Drafting..." : "Redraft Response"}
                           </button>
                         </>
                       ) : (
-                        <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:bg-gray-300">
+                        <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="w-full sm:w-auto bg-gray-900 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:bg-gray-300">
                           {loadingId === review.id ? "Drafting Response..." : "Draft Reply with AI"}
                         </button>
                       )}
