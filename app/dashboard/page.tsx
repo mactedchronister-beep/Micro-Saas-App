@@ -98,7 +98,12 @@ export default function Dashboard() {
     setAuthError(null);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/dashboard` }
+      options: { 
+        redirectTo: `${window.location.origin}/dashboard`,
+        queryParams: {
+          prompt: 'select_account' // <-- This forces the email selection screen
+        }
+      }
     });
     if (error) setAuthError(error.message);
   };
