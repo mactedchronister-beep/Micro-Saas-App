@@ -31,7 +31,6 @@ export default function Dashboard() {
   const [tone, setTone] = useState("Professional");
   const [copiedId, setCopiedId] = useState<number | null>(null);
   
-  // NEW: Micro-interaction Success Toast
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
   useEffect(() => {
@@ -170,7 +169,6 @@ export default function Dashboard() {
     const { error } = await supabase.from('reviews').update({ status: 'replied' }).eq('id', reviewId);
     if (!error) {
       setReviews(prev => prev.filter(review => review.id !== reviewId));
-      // Trigger the premium success toast!
       setShowSuccessToast(true);
       setTimeout(() => setShowSuccessToast(false), 3500);
     }
@@ -216,7 +214,9 @@ export default function Dashboard() {
       { author_name: "Mark T.", rating: 1, review_text: "They were supposed to haul away the old couches from my garage but showed up 2 hours late. Left a mess in the driveway." },
       { author_name: "Sarah W.", rating: 5, review_text: "Fastest junk removal I've ever used. Cleared out my entire basement in under an hour. Highly recommend!" },
       { author_name: "James L.", rating: 2, review_text: "Half the washing machines were out of order. Place was clean enough, but waiting for a machine on a Tuesday afternoon is ridiculous." },
-      { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." }
+      { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." },
+      // Fun addition: Testing the auto-translation
+      { author_name: "Carlos M.", rating: 5, review_text: "El servicio fue excelente y muy rápido. Dejaron todo impecable. Muy recomendados." }
     ];
 
     const existingNames = reviews.map(r => r.author_name);
@@ -297,8 +297,6 @@ export default function Dashboard() {
     );
   }
 
-  // ROI Math: Assuming 54 lifetime reviews managed for a beta user to make the demo look great. 
-  // Formula: (Total Reviews * 5 minutes) / 60 = Hours Saved.
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) 
     : "0.0";
@@ -308,7 +306,6 @@ export default function Dashboard() {
   return ( 
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative overflow-hidden">
       
-      {/* Premium Toast Notification */}
       <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 ease-out ${showSuccessToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
         <div className="bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] font-bold flex items-center gap-3">
           <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center text-white text-xs">✓</div>
@@ -396,7 +393,7 @@ export default function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto pt-8 md:pt-12 px-4 md:px-6 relative z-10">
+        <div className="max-w-5xl mx-auto pt-8 md:pt-12 px-4 md:px-6 relative z-10">
           
           {toastMessage && (
             <div className={`mb-8 p-4 rounded-2xl text-sm font-bold shadow-sm flex justify-between items-center ${toastMessage.includes('successful') ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'}`}>
@@ -415,7 +412,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* NEW: Competitor Benchmarking Banner */}
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-5 rounded-[2rem] flex justify-between items-center mb-8 shadow-sm">
              <div className="flex items-center gap-4">
                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-2xl shadow-inner">🏆</div>
@@ -429,19 +425,26 @@ export default function Dashboard() {
              </div>
           </div>
           
-          {/* UPDATED: Analytics Bar with ROI Tracker */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
-               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Pending Reviews</span>
+          {/* UPDATED: 4-Column Grid featuring the Radiant Tier Gamification */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Pending</span>
                <span className="text-4xl font-extrabold text-gray-900">{reviews.length}</span>
             </div>
-            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
-               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Avg Star Rating</span>
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Star Rating</span>
                <span className="text-4xl font-extrabold text-amber-500">{averageRating}</span>
             </div>
-            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
-               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Hours Saved (ROI)</span>
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center justify-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Hours Saved</span>
                <span className="text-4xl font-extrabold text-emerald-500">{hoursSaved}</span>
+            </div>
+            {/* GAMIFICATION: Radiant Tier Badge */}
+            <div className="bg-gradient-to-br from-indigo-900 to-black p-6 rounded-[2rem] border border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full group-hover:bg-indigo-400/30 transition-all duration-700"></div>
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider z-10">Reputation Tier</span>
+               <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300 z-10 tracking-tight drop-shadow-[0_0_10px_rgba(165,180,252,0.3)]">RADIANT</span>
+               <span className="text-[10px] text-indigo-300/70 font-bold uppercase tracking-widest mt-1 z-10">Top 100 Regional</span>
             </div>
           </div>
 
@@ -523,7 +526,6 @@ export default function Dashboard() {
                             Approve & Publish
                           </button>
                           
-                          {/* FEATURE 1: Copy to Clipboard Button */}
                           <button onClick={() => handleCopy(review.id, replies[review.id])} className="w-full sm:w-auto bg-indigo-50 text-indigo-700 border border-indigo-100 px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-indigo-100">
                             {copiedId === review.id ? "Copied! ✓" : "Copy to Clipboard"}
                           </button>

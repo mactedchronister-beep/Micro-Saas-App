@@ -7,15 +7,12 @@ export async function POST(request: Request) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // 1. Extract the 'tone' variable alongside reviewText and rating
     const { reviewText, rating, tone } = await request.json();
-    
-    // 2. Set a fallback just in case
     const selectedTone = tone || "Professional";
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      temperature: 0.9, // This high temperature forces the AI to be creative and never repeat itself!
+      temperature: 0.9, 
       messages: [
         {
           role: 'system',
@@ -29,7 +26,8 @@ CRITICAL RULES:
 3. BE AUTHENTIC: Make it sound like a real business owner. Aim for 3 to 4 sentences so it does not feel rushed (unless the tone modifier specifically requests "Short and concise").
 4. THE "BANNED WORDS" LIST: You are strictly FORBIDDEN from using the word "inconvenience," "promptly," or the phrase "sorry to hear about your experience." Speak like a normal person.
 5. NO EXCUSES & NO FREEBIES: Do not invent fake excuses for what went wrong. Do not offer refunds, discounts, or free jobs.
-6. NO EMOJIS. Sign off simply with "- [Business Name] Team".`
+6. NO EMOJIS. Sign off simply with "- [Business Name] Team".
+7. AUTO-LANGUAGE DETECTION: Detect the language of the user's review. You MUST write your reply in that exact same language. However, if it is NOT English, you must prepend your final response with a short English summary in brackets so the owner knows what you said. Example: "[English summary: Thanked them for the 5-star review about the clean floors.]\n\n[Foreign Language Response]"`
         },
         {
           role: 'user',
