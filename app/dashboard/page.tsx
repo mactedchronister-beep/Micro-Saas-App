@@ -248,12 +248,16 @@ export default function Dashboard() {
   let rankShadow = "";
 
   if (reviews.length > 0) {
-    if (totalDrafted === 0) {
+    if (totalDrafted < 5) {
       rankName = "BRONZE"; rankSub = "Local Business"; rankColor = "from-amber-600 to-orange-700";
-    } else if (totalDrafted === 1) {
+    } else if (totalDrafted < 15) {
       rankName = "SILVER"; rankSub = "Rising Star"; rankColor = "from-slate-400 to-slate-500";
-    } else if (totalDrafted === 2) {
+    } else if (totalDrafted < 30) {
       rankName = "GOLD"; rankSub = "Top 25% Local"; rankColor = "from-yellow-400 to-amber-500";
+    } else if (totalDrafted < 50) {
+      rankName = "DIAMOND"; rankSub = "Top 10% Regional"; rankColor = "from-cyan-400 to-blue-500";
+    } else if (totalDrafted < 100) {
+      rankName = "IMMORTAL"; rankSub = "Elite Operator"; rankColor = "from-rose-400 to-red-500";
     } else {
       rankName = "RADIANT"; rankSub = "Top 100 Regional"; rankColor = "from-indigo-300 to-purple-300"; rankShadow = "drop-shadow-[0_0_10px_rgba(165,180,252,0.3)]";
     }
