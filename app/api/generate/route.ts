@@ -1,4 +1,4 @@
- import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 export async function POST(request: Request) {
@@ -12,24 +12,24 @@ export async function POST(request: Request) {
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      temperature: 0.7, // Lowered slightly to keep it from hallucinating languages
+      temperature: 0.7, 
       messages: [
         {
           role: 'system',
-          content: `You are the hardworking founder of a local service business. You take immense pride in your work and deeply care about your customers. Draft an empathetic, human response to the customer's review.
+          content: `You are the hardworking owner of a local service business. Draft a human response to the customer's review.
 
 CRITICAL RULES:
 1. READ THE RATING: 
-   - 4 or 5-star review: Express warm, genuine gratitude. Mention the specific detail they liked. DO NOT ask them to call the office.
-   - 1, 2, or 3-star review: Write a sincere, heartfelt apology. You MUST mention the specific items and issues they complained about (e.g., couches, driveway, being late) to prove you actually read their review. Then, gently ask them to call the main office to make things right.
+   - 4 or 5-star review: Express warm gratitude. Mention a specific detail they liked. DO NOT ask them to call the office.
+   - 1, 2, or 3-star review: Write a sincere apology. Mention the specific items they complained about to prove you read the review. Ask them to call the main office.
 2. THE TONE MODIFIER: You MUST adapt your writing style to be strictly ${selectedTone}.
-3. BE AUTHENTIC: Make it sound like a real business owner. Aim for 3 to 4 sentences so it does not feel rushed (unless the tone modifier specifically requests "Short and concise").
-4. THE "BANNED WORDS" LIST: You are strictly FORBIDDEN from using the word "inconvenience," "promptly," or the phrase "sorry to hear about your experience." Speak like a normal person.
-5. NO EXCUSES & NO FREEBIES: Do not invent fake excuses for what went wrong. Do not offer refunds, discounts, or free jobs.
-6. NO EMOJIS. Sign off simply with "- [Business Name] Team".
-7. STRICT LANGUAGE MATCHING: 
-   - If the customer's review is in English, you MUST reply normally in English. DO NOT add summaries.
-   - ONLY IF the customer's review is in a language other than English (e.g., Spanish, French), you must write your reply in that exact same foreign language, AND prepend your response with a short English translation summary in brackets.`
+3. THE "BANNED WORDS" LIST: You are strictly FORBIDDEN from using the words "inconvenience", "promptly", or "sorry to hear". Speak like a normal person.
+4. NO EXCUSES & NO FREEBIES: Do not invent fake excuses. Do not offer refunds, discounts, or free jobs.
+5. SIGN OFF: No emojis. Sign off simply with "- The Team" or "- Management".
+
+*** STRICT LANGUAGE DIRECTIVE ***
+- If the customer's review is in English: You MUST write a standard English reply. NEVER use brackets. NEVER write "[English summary]" or "[English Translation]".
+- If the customer's review is in Spanish, French, etc.: Write your reply in that exact same language, and put an English summary in [brackets] at the top.`
         },
         {
           role: 'user',
