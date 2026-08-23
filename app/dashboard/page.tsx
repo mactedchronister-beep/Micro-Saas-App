@@ -195,7 +195,8 @@ export default function Dashboard() {
       { author_name: "Mark T.", rating: 1, review_text: "They were supposed to haul away the old couches from my garage but showed up 2 hours late. Left a mess in the driveway." },
       { author_name: "Sarah W.", rating: 5, review_text: "Fastest junk removal I've ever used. Cleared out my entire basement in under an hour. Highly recommend!" },
       { author_name: "James L.", rating: 2, review_text: "Half the washing machines were out of order. Place was clean enough, but waiting for a machine on a Tuesday afternoon is ridiculous." },
-      { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." }
+      { author_name: "Elena R.", rating: 5, review_text: "Super clean laundromat. The heavy-duty washers handled my king-size comforter perfectly. Will definitely be back." },
+      { author_name: "Carlos M.", rating: 5, review_text: "El servicio fue excelente y muy rápido. Dejaron todo impecable. Muy recomendados." }
     ];
 
     const existingNames = reviews.map(r => r.author_name);
@@ -235,12 +236,28 @@ export default function Dashboard() {
     );
   }
 
+  // CORE MATH
   const averageRating = reviews.length > 0 ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) : "0.0";
-  const lifetimeDrafts = reviews.length === 0 ? 0 : 54 + Object.keys(replies).length; 
-  const hoursSaved = ((lifetimeDrafts * 5) / 60).toFixed(1);
+  const totalDrafted = Object.keys(replies).length; 
+  const hoursSaved = ((totalDrafted * 5) / 60).toFixed(1);
 
-  // NEW: Dynamic Rank Logic based on whether they have populated their queue yet
-  const isUnranked = reviews.length === 0;
+  // GAMIFICATION: Dynamic Ranking Logic
+  let rankName = "UNRANKED";
+  let rankSub = "Connect Account";
+  let rankColor = "from-gray-400 to-gray-500";
+  let rankShadow = "";
+
+  if (reviews.length > 0) {
+    if (totalDrafted === 0) {
+      rankName = "BRONZE"; rankSub = "Local Business"; rankColor = "from-amber-600 to-orange-700";
+    } else if (totalDrafted === 1) {
+      rankName = "SILVER"; rankSub = "Rising Star"; rankColor = "from-slate-400 to-slate-500";
+    } else if (totalDrafted === 2) {
+      rankName = "GOLD"; rankSub = "Top 25% Local"; rankColor = "from-yellow-400 to-amber-500";
+    } else {
+      rankName = "RADIANT"; rankSub = "Top 100 Regional"; rankColor = "from-indigo-300 to-purple-300"; rankShadow = "drop-shadow-[0_0_10px_rgba(165,180,252,0.3)]";
+    }
+  }
 
   return ( 
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative overflow-hidden">
@@ -338,19 +355,26 @@ export default function Dashboard() {
                <span className="text-4xl font-extrabold text-emerald-500">{hoursSaved}</span>
             </div>
             
-            {/* UPDATED: Dynamic Reputation Tier based on active queue */}
-            {isUnranked ? (
+            {/* GAMIFICATION RENDER */}
+            {reviews.length === 0 ? (
               <div className="bg-gray-100 p-6 rounded-[2rem] border border-gray-200 shadow-inner flex flex-col items-center justify-center">
                  <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Reputation Tier</span>
                  <span className="text-3xl font-extrabold text-gray-400 tracking-tight">UNRANKED</span>
                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Connect Account</span>
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-indigo-900 to-black p-6 rounded-[2rem] border border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center relative overflow-hidden group">
-                 <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full group-hover:bg-indigo-400/30 transition-all duration-700"></div>
-                 <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider z-10">Reputation Tier</span>
-                 <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300 z-10 tracking-tight drop-shadow-[0_0_10px_rgba(165,180,252,0.3)]">RADIANT</span>
-                 <span className="text-[10px] text-indigo-300/70 font-bold uppercase tracking-widest mt-1 z-10">Top 100 Regional</span>
+              <div className={`p-6 rounded-[2rem] shadow-[0_10px_30px_rgba(0,0,0,0.15)] flex flex-col items-center justify-center relative overflow-hidden group transition-all ${rankName === 'RADIANT' ? 'bg-gradient-to-br from-indigo-900 to-black border border-gray-800' : 'bg-white border border-gray-100'}`}>
+                 {rankName === 'RADIANT' && <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 blur-2xl rounded-full group-hover:bg-indigo-400/30 transition-all duration-700"></div>}
+                 
+                 <span className={`font-bold text-xs mb-1 uppercase tracking-wider z-10 ${rankName === 'RADIANT' ? 'text-gray-400' : 'text-gray-500'}`}>
+                   Reputation Tier
+                 </span>
+                 <span className={`text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r ${rankColor} z-10 tracking-tight ${rankShadow}`}>
+                   {rankName}
+                 </span>
+                 <span className={`text-[10px] font-bold uppercase tracking-widest mt-1 z-10 ${rankName === 'RADIANT' ? 'text-indigo-300/70' : 'text-gray-400'}`}>
+                   {rankSub}
+                 </span>
               </div>
             )}
           </div>
