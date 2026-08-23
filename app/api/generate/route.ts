@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      temperature: 0.9, 
+      temperature: 0.7, // Lowered slightly to keep it from hallucinating languages
       messages: [
         {
           role: 'system',
@@ -27,7 +27,9 @@ CRITICAL RULES:
 4. THE "BANNED WORDS" LIST: You are strictly FORBIDDEN from using the word "inconvenience," "promptly," or the phrase "sorry to hear about your experience." Speak like a normal person.
 5. NO EXCUSES & NO FREEBIES: Do not invent fake excuses for what went wrong. Do not offer refunds, discounts, or free jobs.
 6. NO EMOJIS. Sign off simply with "- [Business Name] Team".
-7. AUTO-LANGUAGE DETECTION: Detect the language of the user's review. You MUST write your reply in that exact same language. However, if it is NOT English, you must prepend your final response with a short English summary in brackets so the owner knows what you said. Example: "[English summary: Thanked them for the 5-star review about the clean floors.]\n\n[Foreign Language Response]"`
+7. STRICT LANGUAGE MATCHING: 
+   - If the customer's review is in English, you MUST reply normally in English. DO NOT add summaries.
+   - ONLY IF the customer's review is in a language other than English (e.g., Spanish, French), you must write your reply in that exact same foreign language, AND prepend your response with a short English translation summary in brackets.`
         },
         {
           role: 'user',
