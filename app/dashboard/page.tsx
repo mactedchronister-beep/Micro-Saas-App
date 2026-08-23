@@ -27,6 +27,9 @@ export default function Dashboard() {
   
   const [isPro, setIsPro] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  // SPRINT 2: AI Tone State
+  const [tone, setTone] = useState("Professional");
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -101,7 +104,7 @@ export default function Dashboard() {
       options: { 
         redirectTo: `${window.location.origin}/dashboard`,
         queryParams: {
-          prompt: 'select_account' // <-- This forces the email selection screen
+          prompt: 'select_account'
         }
       }
     });
@@ -149,7 +152,8 @@ export default function Dashboard() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reviewText: text, rating }),
+        // Passing the Tone modifier to the API!
+        body: JSON.stringify({ reviewText: text, rating, tone }),
       });
       const data = await response.json();
       if (data.reply) setReplies(prev => ({ ...prev, [reviewId]: data.reply }));
@@ -227,6 +231,7 @@ export default function Dashboard() {
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-gray-500 font-medium">Authenticating secure connection...</div>;
 
   if (!session) {
+    // ... [Auth UI remains unchanged, truncated here for brevity but keep your existing auth return block] ...
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-[140px] rounded-full pointer-events-none"></div>
@@ -315,6 +320,7 @@ export default function Dashboard() {
       </nav>
 
       {!isPro ? (
+         // ... [Pro Paywall UI remains unchanged] ...
         <div className="flex flex-col items-center justify-center pt-16 md:pt-24 px-4 relative z-10">
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide shadow-sm">
             UPGRADE REQUIRED
@@ -379,11 +385,19 @@ export default function Dashboard() {
           {isLoading ? (
             <div className="text-center p-20 text-gray-400 font-bold animate-pulse">Syncing latest reviews...</div>
           ) : reviews.length === 0 ? (
+            
+            // SPRINT 1: The New Empty State
             <div className="text-center p-10 md:p-20 bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-1">
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">🎉</div>
-              <h2 className="text-2xl font-extrabold text-gray-900 mb-2">Inbox Zero</h2>
-              <p className="text-gray-500 font-medium">You are all caught up! No pending reviews to manage.</p>
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-indigo-100">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+              </div>
+              <h2 className="text-2xl font-extrabold text-gray-900 mb-3">Welcome to EchoReply!</h2>
+              <p className="text-gray-500 font-medium max-w-md mx-auto mb-8">Your dashboard is currently empty. Connect your Google Business Profile to securely import your latest customer reviews and start automating your reputation management.</p>
+              <button onClick={() => alert("Google Business Profile integration coming soon pending API approval!")} className="bg-gray-900 text-white px-8 py-3.5 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-black hover:shadow-lg active:scale-95 focus:ring-4 focus:ring-gray-200">
+                Connect Google Account
+              </button>
             </div>
+
           ) : (
             <div className="space-y-6">
               {reviews.map((review) => (
@@ -415,9 +429,24 @@ export default function Dashboard() {
                   <p className="text-gray-700 mb-8 text-base md:text-lg leading-relaxed font-medium">"{review.review_text}"</p>
                   
                   <div className="bg-gray-50/70 p-4 md:p-6 rounded-3xl border border-gray-100 relative">
-                    <p className="text-xs text-indigo-500 mb-4 font-bold uppercase tracking-widest flex items-center gap-2">
-                       <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span> AI Assistant
-                    </p>
+                    
+                    {/* SPRINT 2: UI Dropdown integrated cleanly into your header */}
+                    <div className="flex justify-between items-center mb-4">
+                      <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest flex items-center gap-2">
+                         <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span> AI Assistant
+                      </p>
+                      <select 
+                        value={tone}
+                        onChange={(e) => setTone(e.target.value)}
+                        className="bg-white border border-gray-200 text-gray-600 text-xs rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-500/20 font-bold"
+                      >
+                        <option value="Professional">Professional Tone</option>
+                        <option value="Warm and friendly">Friendly Tone</option>
+                        <option value="Apologetic and helpful">Apologetic Tone</option>
+                        <option value="Short and concise">Short Tone</option>
+                      </select>
+                    </div>
+
                     {replies[review.id] ? (
                       <textarea value={replies[review.id]} onChange={(e) => setReplies(prev => ({ ...prev, [review.id]: e.target.value }))} className="w-full p-4 md:p-5 border border-gray-200 rounded-2xl text-gray-800 mb-5 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white min-h-[140px] resize-y font-medium shadow-sm transition-all" />
                     ) : (
