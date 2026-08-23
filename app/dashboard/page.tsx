@@ -27,9 +27,9 @@ export default function Dashboard() {
   
   const [isPro, setIsPro] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  
-  // SPRINT 2: AI Tone State
+
   const [tone, setTone] = useState("Professional");
+  const [copiedId, setCopiedId] = useState<number | null>(null);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -104,7 +104,7 @@ export default function Dashboard() {
       options: { 
         redirectTo: `${window.location.origin}/dashboard`,
         queryParams: {
-          prompt: 'select_account'
+          prompt: 'select_account' 
         }
       }
     });
@@ -152,7 +152,6 @@ export default function Dashboard() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Passing the Tone modifier to the API!
         body: JSON.stringify({ reviewText: text, rating, tone }),
       });
       const data = await response.json();
@@ -181,6 +180,12 @@ export default function Dashboard() {
     } else {
       alert("Error deleting review. Check Supabase delete policy.");
     }
+  };
+
+  const handleCopy = (id: number, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const handleClearQueue = async () => {
@@ -231,7 +236,6 @@ export default function Dashboard() {
   if (authLoading) return <div className="min-h-screen flex items-center justify-center bg-[#fafafa] text-gray-500 font-medium">Authenticating secure connection...</div>;
 
   if (!session) {
-    // ... [Auth UI remains unchanged, truncated here for brevity but keep your existing auth return block] ...
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#fafafa] p-4 font-sans relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-gradient-to-tr from-indigo-500/10 to-purple-500/10 blur-[140px] rounded-full pointer-events-none"></div>
@@ -285,6 +289,11 @@ export default function Dashboard() {
     );
   }
 
+  const averageRating = reviews.length > 0 
+    ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) 
+    : "0.0";
+  const totalDrafted = Object.keys(replies).length;
+
   return ( 
     <div className="min-h-screen bg-[#fafafa] font-sans pb-20 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none"></div>
@@ -309,6 +318,12 @@ export default function Dashboard() {
                 </button>
               </>
             )}
+            
+            {/* FEATURE: Link to Settings Page added here */}
+            <Link href="/settings" className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95 whitespace-nowrap text-center">
+              Settings
+            </Link>
+            
             <button onClick={handlePortal} disabled={isPortalLoading} className="flex-1 md:flex-none text-xs md:text-sm px-4 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm active:scale-95 disabled:opacity-50 whitespace-nowrap">
               {isPortalLoading ? "Loading..." : "Billing"}
             </button>
@@ -320,7 +335,6 @@ export default function Dashboard() {
       </nav>
 
       {!isPro ? (
-         // ... [Pro Paywall UI remains unchanged] ...
         <div className="flex flex-col items-center justify-center pt-16 md:pt-24 px-4 relative z-10">
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-bold tracking-wide shadow-sm">
             UPGRADE REQUIRED
@@ -382,11 +396,26 @@ export default function Dashboard() {
             </div>
           </div>
           
+          {/* FEATURE 2: Analytics Bar */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Pending Reviews</span>
+               <span className="text-4xl font-extrabold text-gray-900">{reviews.length}</span>
+            </div>
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Avg Star Rating</span>
+               <span className="text-4xl font-extrabold text-amber-500">{averageRating}</span>
+            </div>
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[2rem] border border-gray-100 shadow-[0_10px_30px_rgba(0,0,0,0.03)] flex flex-col items-center">
+               <span className="text-gray-400 font-bold text-xs mb-1 uppercase tracking-wider">Replies Drafted</span>
+               <span className="text-4xl font-extrabold text-indigo-600">{totalDrafted}</span>
+            </div>
+          </div>
+
           {isLoading ? (
             <div className="text-center p-20 text-gray-400 font-bold animate-pulse">Syncing latest reviews...</div>
           ) : reviews.length === 0 ? (
             
-            // SPRINT 1: The New Empty State
             <div className="text-center p-10 md:p-20 bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.04)] transition-transform duration-300 hover:-translate-y-1">
               <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-indigo-100">
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
@@ -430,11 +459,11 @@ export default function Dashboard() {
                   
                   <div className="bg-gray-50/70 p-4 md:p-6 rounded-3xl border border-gray-100 relative">
                     
-                    {/* SPRINT 2: UI Dropdown integrated cleanly into your header */}
                     <div className="flex justify-between items-center mb-4">
                       <p className="text-xs text-indigo-500 font-bold uppercase tracking-widest flex items-center gap-2">
                          <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span> AI Assistant
                       </p>
+                      
                       <select 
                         value={tone}
                         onChange={(e) => setTone(e.target.value)}
@@ -461,6 +490,12 @@ export default function Dashboard() {
                           <button onClick={() => handleApprove(review.id)} className="w-full sm:w-auto bg-emerald-500 text-white px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-emerald-600 hover:shadow-[0_8px_30px_rgba(16,185,129,0.3)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-emerald-500/30">
                             Approve & Publish
                           </button>
+                          
+                          {/* FEATURE 1: Copy to Clipboard Button */}
+                          <button onClick={() => handleCopy(review.id, replies[review.id])} className="w-full sm:w-auto bg-indigo-50 text-indigo-700 border border-indigo-100 px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-indigo-100 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-indigo-100">
+                            {copiedId === review.id ? "Copied! ✓" : "Copy to Clipboard"}
+                          </button>
+
                           <button onClick={() => handleGenerateReply(review.id, review.review_text, review.rating)} disabled={loadingId === review.id} className="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-6 py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ease-out hover:bg-gray-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.97] focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:opacity-50">
                             {loadingId === review.id ? "Drafting..." : "Redraft Response"}
                           </button>
